@@ -198,22 +198,29 @@ const VocabularyExercises = () => {
       .trim();
   };
 
-  useEffect(() => {
+useEffect(() => {
   const loadData = async () => {
     try {
-      console.log('Starting to fetch data');
-      const response = await fetch('./vocab.csv');
-      console.log('Fetch response:', response);
+      const response = await fetch(`${import.meta.env.BASE_URL}vocab.csv`);
       const text = await response.text();
-      console.log('CSV content:', text.slice(0, 100)); // Show first 100 chars
       const result = Papa.parse(text, {
         header: true,
         skipEmptyLines: true
       });
-      console.log('Parsed data:', result);
-      // ... rest of the code
+      const data = result.data;
+      setVocabData(data);
+      
+      // Create and shuffle exercises once when data is loaded
+      const allExercises = data.flatMap(item =>
+        Object.entries(exerciseTypes).map(([type, exercise]) => ({
+          type,
+          exercise,
+          data: item
+        }))
+      );
+      setExercises(_.shuffle(allExercises));
     } catch (error) {
-      console.error('Error in loadData:', error);
+      console.error('Error loading vocabulary data:', error);
     }
   };
   loadData();
