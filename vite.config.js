@@ -4,7 +4,10 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // This is important for both local and deployed environments
+  base: '/vocab-trainer/', // Keep this for GitHub Pages
+  build: {
+    outDir: 'dist'
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
