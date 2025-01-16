@@ -200,29 +200,48 @@ const VocabularyExercises = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Use relative path for local development
-        const csvPath = import.meta.env.DEV ? '/vocab.csv' : '/vocab-trainer/vocab.csv';
-        const response = await fetch(csvPath);
-        const text = await response.text();
-        const result = Papa.parse(text, {
+        console.log('Starting to load data');
+
+        // Use fetch for both local and production
+        const response = await fetch(`${import.meta.env.DEV ? '/' : import.meta.env.BASE_URL}vocab.csv`);
+        console.log('Response:', response);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const csvText = await response.text();
+        console.log('CSV text received:', csvText.substring(0, 100));
+
+        const result = Papa.parse(csvText, {
           header: true,
+          delimiter: ';', // Specify semicolon delimiter
           skipEmptyLines: true
         });
-        const data = result.data;
-        setVocabData(data);
 
-        const allExercises = data.flatMap(item =>
+        console.log('Parsed data:', result.data);
+
+        if (result.data.length === 0) {
+          throw new Error('No data parsed from CSV');
+        }
+
+        setVocabData(result.data);
+
+        const allExercises = result.data.flatMap(item =>
           Object.entries(exerciseTypes).map(([type, exercise]) => ({
             type,
             exercise,
             data: item
           }))
         );
+
+        console.log('Created exercises:', allExercises.length);
         setExercises(_.shuffle(allExercises));
       } catch (error) {
         console.error('Error loading vocabulary data:', error);
       }
     };
+
     loadData();
   }, []);
 
