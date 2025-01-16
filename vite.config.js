@@ -4,9 +4,19 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/vocab-trainer/',  // This is important for GitHub Pages
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
     },
   },
 })
