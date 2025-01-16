@@ -57,7 +57,7 @@ const ExerciseItem = ({ exercise, data, onScoreChange }) => {
     if (!userInput.trim()) {
       return;
     }
-    
+
     const isCorrect = exercise.checkAnswer(userInput, data);
     setShowAnswer(true);
     onScoreChange(isCorrect);
@@ -75,15 +75,15 @@ const ExerciseItem = ({ exercise, data, onScoreChange }) => {
   return (
     <div className="mb-8 p-6 border-2 rounded-2xl bg-gradient-to-b from-purple-50 to-white border-purple-100 shadow-lg">
       <div className="font-medium mb-4 text-lg text-purple-800">{exercise.prompt}</div>
-      
+
       {exercise.type === 'fillInBlank' ? (
         <div className="mb-4">
           <div className="bg-blue-50 p-4 rounded-xl mb-3 border-2 border-blue-100">
-            <strong className="text-blue-700">German word:</strong> 
+            <strong className="text-blue-700">German word:</strong>
             <span className="text-blue-600 ml-2 text-lg">{data.german}</span>
           </div>
           <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-100">
-            <strong className="text-yellow-700">Sentence:</strong> 
+            <strong className="text-yellow-700">Sentence:</strong>
             <span className="text-yellow-600 ml-2 text-lg">{exercise.getQuestion(data)}</span>
           </div>
         </div>
@@ -92,7 +92,7 @@ const ExerciseItem = ({ exercise, data, onScoreChange }) => {
           {exercise.getQuestion(data)}
         </div>
       )}
-      
+
       {exercise.inputType === 'short' ? (
         <Input
           type="text"
@@ -116,7 +116,7 @@ const ExerciseItem = ({ exercise, data, onScoreChange }) => {
       )}
 
       {!showAnswer ? (
-        <Button 
+        <Button
           onClick={handleCheck}
           className="w-full mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-lg p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200"
         >
@@ -124,20 +124,19 @@ const ExerciseItem = ({ exercise, data, onScoreChange }) => {
         </Button>
       ) : (
         <div className="mb-4">
-          <div className={`p-6 rounded-xl mb-4 border-2 ${
-            exercise.checkAnswer(userInput, data) 
-              ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200' 
+            <div className={`p-6 rounded-xl mb-4 border-2 ${exercise.checkAnswer(userInput, data)
+              ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'
               : 'bg-gradient-to-r from-orange-50 to-yellow-100 border-orange-200'
-          }`}>
+              }`}>
             <div className="font-medium text-xl mb-2 text-center">
               {feedback}
             </div>
             <div className="mt-4 p-3 bg-white rounded-lg">
-              <strong className="text-gray-700">Correct answer:</strong> 
+                <strong className="text-gray-700">Correct answer:</strong>
               <span className="ml-2 text-lg">{exercise.getAnswer(data)}</span>
             </div>
           </div>
-          <Button 
+            <Button
             onClick={handleReset}
             className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-lg p-6 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-200"
           >
@@ -198,33 +197,48 @@ const VocabularyExercises = () => {
       .trim();
   };
 
-useEffect(() => {
-  const loadData = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.BASE_URL}vocab.csv`);
-      const text = await response.text();
-      const result = Papa.parse(text, {
-        header: true,
-        skipEmptyLines: true
-      });
-      const data = result.data;
-      setVocabData(data);
-      
-      // Create and shuffle exercises once when data is loaded
-      const allExercises = data.flatMap(item =>
-        Object.entries(exerciseTypes).map(([type, exercise]) => ({
-          type,
-          exercise,
-          data: item
-        }))
-      );
-      setExercises(_.shuffle(allExercises));
-    } catch (error) {
-      console.error('Error loading vocabulary data:', error);
-    }
-  };
-  loadData();
-}, []);
+  useEffect(() => {
+    const loadData = async () => {
+      console.log('Starting to load data');
+      try {
+        // Try with the full GitHub Pages URL to test
+        const csvUrl = 'https://yardie83.github.io/vocab-trainer/vocab.csv';
+        console.log('Using CSV URL:', csvUrl);
+        const response = await fetch(csvUrl);
+
+        console.log('Response received:', response);
+        const text = await response.text();
+        console.log('CSV text received:', text.substring(0, 100)); // Show first 100 chars
+
+        const result = Papa.parse(text, {
+          header: true,
+          skipEmptyLines: true
+        });
+        console.log('Parsed result:', result);
+
+        const data = result.data;
+        console.log('Setting vocab data:', data);
+        setVocabData(data);
+
+        // Create and shuffle exercises
+        const allExercises = data.flatMap(item =>
+          Object.entries(exerciseTypes).map(([type, exercise]) => ({
+            type,
+            exercise,
+            data: item
+          }))
+        );
+        console.log('Created exercises:', allExercises.length);
+        setExercises(_.shuffle(allExercises));
+      } catch (error) {
+        console.error('Detailed error in loadData:', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Also add a render log
+  console.log('Rendering VocabularyExercises component');
 
   const handleScoreChange = (isCorrect) => {
     setTotalAttempts(prev => prev + 1);
@@ -248,9 +262,9 @@ useEffect(() => {
               Your Progress 🌟
             </div>
             <div className="text-lg">
-              Score: {score}/{totalAttempts} 
+              Score: {score}/{totalAttempts}
               <span className="text-purple-600 ml-2">
-                ({totalAttempts > 0 ? Math.round((score/totalAttempts) * 100) : 0}%)
+                ({totalAttempts > 0 ? Math.round((score / totalAttempts) * 100) : 0}%)
               </span>
             </div>
           </div>
