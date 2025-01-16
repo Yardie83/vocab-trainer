@@ -199,28 +199,18 @@ const VocabularyExercises = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      console.log('Starting to load data');
       try {
-        // Try with the full GitHub Pages URL to test
-        const csvUrl = 'https://yardie83.github.io/vocab-trainer/vocab.csv';
-        console.log('Using CSV URL:', csvUrl);
-        const response = await fetch(csvUrl);
-
-        console.log('Response received:', response);
+        // Use relative path for local development
+        const csvPath = import.meta.env.DEV ? '/vocab.csv' : '/vocab-trainer/vocab.csv';
+        const response = await fetch(csvPath);
         const text = await response.text();
-        console.log('CSV text received:', text.substring(0, 100)); // Show first 100 chars
-
         const result = Papa.parse(text, {
           header: true,
           skipEmptyLines: true
         });
-        console.log('Parsed result:', result);
-
         const data = result.data;
-        console.log('Setting vocab data:', data);
         setVocabData(data);
 
-        // Create and shuffle exercises
         const allExercises = data.flatMap(item =>
           Object.entries(exerciseTypes).map(([type, exercise]) => ({
             type,
@@ -228,10 +218,9 @@ const VocabularyExercises = () => {
             data: item
           }))
         );
-        console.log('Created exercises:', allExercises.length);
         setExercises(_.shuffle(allExercises));
       } catch (error) {
-        console.error('Detailed error in loadData:', error);
+        console.error('Error loading vocabulary data:', error);
       }
     };
     loadData();
